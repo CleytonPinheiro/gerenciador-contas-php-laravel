@@ -17,7 +17,6 @@ class AccountsController extends Controller
                 return response()->json(['Error: ' => 'Nenhuma conta cadastrada']);
             }
         } catch (\Throwable $th) {
-
             return response()->json(['Error ao carregar as contas:' => $th], 422);
         }
     }
