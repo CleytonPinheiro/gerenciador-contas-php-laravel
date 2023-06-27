@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Accounts;
-use Carbon\Carbon;
-use DateTime;
 use Illuminate\Http\Request;
 
 class AccountsController extends Controller
@@ -13,13 +11,14 @@ class AccountsController extends Controller
         try {
             $count =  Accounts::all();
 
-            if($count) {
+            if(count($count) > 0) {
                 return response()->json($count);
+            } else {
+                return response()->json(['Error: ' => 'Nenhuma conta cadastrada']);
             }
-
         } catch (\Throwable $th) {
 
-            return response()->json(['Error ao carregar os clientes:' => $th], 422);
+            return response()->json(['Error ao carregar as contas:' => $th], 422);
         }
     }
 
@@ -33,7 +32,7 @@ class AccountsController extends Controller
             ]);
 
             $account = new Accounts();
-            // return dd($request->input('credit'));
+
             if(($request->input('credit')))
                 {
                     if(($request->input('credit')))
@@ -48,7 +47,6 @@ class AccountsController extends Controller
                 );
             };
 
-            // return $request->input('name');
             $countCreated = $account->create($request->input())->save();
 
             if($countCreated) {
@@ -70,12 +68,53 @@ class AccountsController extends Controller
 
     public function show($id)
     {
-        return Accounts::all();
+        try {
+            $count = Accounts::where('id', $id)->first();
+
+            if(isset($count->id)) {
+                return response()->json(['data' => $count]);
+            } else {
+                return response()->json([
+                    'Erro' => true,
+                    'Message:' => "Conta não existe."
+                ]);
+            };
+        } catch (\Throwable $th) {
+            return response()->json([
+                'Erro:' => "Erro ao buscar a conta.",
+                'Detalhes' => $th
+            ], 422);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $validatedData = $request->validate([
+                'name' => ['required', 'max:255'],
+                'start_account' => ['required'],
+                'holder_id' => ['required']
+            ]);
+
+            if($validatedData) {
+                Accounts::whereId($id)->update($validatedData);
+
+                return response()->json([
+                    'Message:' => "Conta {$id} atualizada com sucesso."
+                ]);
+            } else {
+                return response()->json([
+                    'Erro' => true,
+                    'Message:' => "Conta não existe."
+                ]);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'Erro:' => true,
+                'Message: ' => 'Erro ao atualizar a conta número: {$id}.',
+                'Detalhes' => $th
+            ], 422);
+        }
     }
 
     public function destroy($idCount) {
@@ -83,13 +122,21 @@ class AccountsController extends Controller
             $count = Accounts::destroy($idCount);
 
             if($count) {
-                return response()->json(['Deletado' => 'Conta deletada com sucesso']);
+                return response()->json([
+                    'Erro :' => false,
+                    'Message :' => 'Conta deletada com sucesso'
+                ]);
             } else {
-                return response()->json(['Erro:' => 'Cliente não encontrado para deletá-lo']);
+                return response()->json([
+                    'Erro :' =>  true,
+                    'Message :' => 'Conta inexistente.'
+                ]);
             }
         } catch (\Throwable $th) {
-
-            return response()->json(['Erro ao deletar a conta:' => $th]);
+            return response()->json([
+                'Erro :' => true,
+                'Message :' => $th
+            ]);
         }
     }
 }

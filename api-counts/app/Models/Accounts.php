@@ -9,10 +9,6 @@ class Accounts extends Model
 {
     use HasFactory;
 
-    // protected $attributes = [
-    //     'status' => 'activated',
-    // ];
-
     protected $fillable = ['name', 'status', 'debit', 'credit', 'description', 'start_account', 'holder_id'];
 
     public function holder()

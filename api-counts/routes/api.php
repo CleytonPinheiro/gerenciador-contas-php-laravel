@@ -15,5 +15,3 @@ Route::controller(AccountsController::class)->group( function() {
     Route::put('/conta/{id}', 'update')->name('account.update');
     Route::delete('/conta/{id}', 'destroy')->name('account.destroy');
 });
-
-
