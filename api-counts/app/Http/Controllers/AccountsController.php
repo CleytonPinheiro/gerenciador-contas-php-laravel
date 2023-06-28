@@ -2,25 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Accounts;
 use Illuminate\Http\Request;
+use App\Models\Accounts;
 
 class AccountsController extends Controller
 {
-    public function index() {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
         try {
-            $count =  Accounts::all();
+            $account =  Accounts::all();
 
-            if(count($count) > 0) {
-                return response()->json($count);
+            if(count($account) > 0)
+            {
+                return response()->json($account);
             } else {
                 return response()->json(['Error: ' => 'Nenhuma conta cadastrada']);
             }
         } catch (\Throwable $th) {
-            return response()->json(['Error ao carregar as contas:' => $th], 422);
+            return response()->json(['Erro ao carregar as contas:' => $th], 422);
         }
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
         try {
@@ -32,23 +45,24 @@ class AccountsController extends Controller
 
             $account = new Accounts();
 
-            if(($request->input('credit')))
+            if($validatedData)
+            {
+                if(($request->input('credit')))
                 {
-                    if(($request->input('credit')))
-                    {
-                        $account->credit = $request->input('credit');
-                    } else {
-                        $account->debit = $request->input('debit');
-                    };
+                    $account->credit = $request->input('credit');
                 } else {
-                    return response()->json([
-                        'ERRO: ' => 'Obrigatório debitar ou creditar na conta.'], 201
+                    $account->debit = $request->input('debit');
+                };
+            } else {
+                return response()->json([
+                    'ERRO: ' => 'Obrigatório debitar ou creditar na conta.'], 201
                 );
             };
 
             $countCreated = $account->create($request->input())->save();
 
-            if($countCreated) {
+            if($countCreated)
+            {
                 return response()->json([
                     'Sucesso' => 'Conta cadastrado com sucesso.',
                     'Detalhes: ' => $countCreated ], 201);
@@ -65,6 +79,12 @@ class AccountsController extends Controller
         }
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function show($id)
     {
         try {
@@ -86,13 +106,22 @@ class AccountsController extends Controller
         }
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request, $id)
     {
         try {
             $validatedData = $request->validate([
                 'name' => ['required', 'max:255'],
                 'start_account' => ['required'],
-                'holder_id' => ['required']
+                'holder_id' => ['required'],
+                'credit' => '',
+                'debit' => ''
             ]);
 
             if($validatedData) {
@@ -116,7 +145,14 @@ class AccountsController extends Controller
         }
     }
 
-    public function destroy($idCount) {
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($idCount)
+    {
         try {
             $count = Accounts::destroy($idCount);
 
